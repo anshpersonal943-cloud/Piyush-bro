@@ -462,6 +462,7 @@ function init() {
   mapPhotoItems();
   initFinalButton();
   initAudioAutoplay();
+  initLightAnimations();
 
   const uploadForm = document.getElementById('uploadForm');
   if (uploadForm) {
@@ -688,6 +689,45 @@ async function adjustImageFocus(img) {
     console.warn('FaceDetector failed:', error);
   }
   img.style.objectPosition = 'center';
+}
+
+// ✨ Light Animations & Effects
+function initLightAnimations() {
+  // Add interactive glow to cards on hover
+  document.querySelectorAll('.photo-card, .memory-item, .moment-card, .timeline-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+      if (window.gsap) {
+        gsap.to(this, { filter: 'drop-shadow(0 0 16px rgba(255, 126, 199, 0.5))', duration: 0.4, ease: 'power2.out' });
+      }
+    });
+    card.addEventListener('mouseleave', function() {
+      if (window.gsap) {
+        gsap.to(this, { filter: 'drop-shadow(0 0 0px rgba(255, 126, 199, 0))', duration: 0.4, ease: 'power2.out' });
+      }
+    });
+  });
+
+  // Add click ripple effect to buttons
+  document.querySelectorAll('.button, .intro-skip').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      const rect = this.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.style.position = 'absolute';
+      ripple.style.borderRadius = '50%';
+      ripple.style.background = 'rgba(255, 255, 255, 0.5)';
+      ripple.style.width = '100px';
+      ripple.style.height = '100px';
+      ripple.style.left = (e.clientX - rect.left - 50) + 'px';
+      ripple.style.top = (e.clientY - rect.top - 50) + 'px';
+      ripple.style.pointerEvents = 'none';
+      this.style.position = 'relative';
+      this.style.overflow = 'hidden';
+      this.appendChild(ripple);
+      if (window.gsap) {
+        gsap.to(ripple, { scale: 3, opacity: 0, duration: 0.8, ease: 'power2.out', onComplete: () => ripple.remove() });
+      }
+    });
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);

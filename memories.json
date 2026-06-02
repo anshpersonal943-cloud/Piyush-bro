@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1779602260658,
+    "title": "Note Test",
+    "message": "This is a test note",
+    "image": "/uploads/photo%20piyush/WhatsApp%20Image%202026-05-21%20at%208.08.48%20PM%20(1).JPG",
+    "createdAt": "2026-05-24T05:57:40.658Z"
+  },
+  {
+    "id": 1779602552789,
+    "title": "Admin Test Note",
+    "message": "This is a test note created from the backend by admin.",
+    "image": "/uploads/photo%20piyush/WhatsApp%20Image%202026-05-21%20at%208.08.49%20PM%20(1).JPG",
+    "createdAt": "2026-05-24T06:02:32.789Z"
+  }
+]

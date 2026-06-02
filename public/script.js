@@ -57,8 +57,8 @@ function openFinalVideo() {
     }
     finalVideo.load();
   }
-  if (modalTitle) modalTitle.textContent = 'Last Video';
-  if (modalCaption) modalCaption.textContent = 'This frame is ready for the video you will add later.';
+  if (modalTitle) modalTitle.textContent = '😂😂😂😂';
+  if (modalCaption) modalCaption.textContent = 'Bhai Video toh mujhe pata hai khatarnak hai 😂 par bhai no grudges plsss and kaam karvadiyo usme no drama 😂😂 🙏🙏🙏';
   if (window.gsap) {
     gsap.fromTo('.modal-shell', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' });
   }
@@ -66,6 +66,8 @@ function openFinalVideo() {
 
 function closePhoto() {
   if (!modal) return;
+  // Don't allow closing while video is playing
+  if (finalVideo && !finalVideo.paused) return;
   if (finalVideo) finalVideo.pause();
   if (window.gsap) {
     gsap.to('.modal-shell', { y: 30, opacity: 0, duration: 0.28, ease: 'power3.in', onComplete() { modal.classList.add('hidden'); } });
@@ -101,37 +103,6 @@ function applyTilt(card) {
 function mapPhotoItems() {
   document.querySelectorAll('.photo-card').forEach(card => {
     card.style.willChange = 'transform';
-    function mapMomentCards() {
-      document.querySelectorAll('.moment-card').forEach(card => {
-        if (card.dataset.mapped === 'true') return;
-        card.dataset.mapped = 'true';
-
-        const titleEl = card.querySelector('.moment-copy h3');
-        const captionEl = card.querySelector('.moment-copy p');
-
-        card.addEventListener('click', async () => {
-          const title = titleEl ? titleEl.textContent.trim() : '';
-          const caption = captionEl ? captionEl.textContent.trim() : '';
-
-          // Prefer an explicit data-src (set by loadFolderPreviewImages), otherwise read computed background-image
-          let src = card.dataset.src || '';
-          if (!src) {
-            const imageEl = card.querySelector('.moment-image');
-            const bg = imageEl ? getComputedStyle(imageEl).backgroundImage : '';
-            const m = bg && bg.match(/url\((?:"|')?(.*?)(?:"|')?\)/);
-            if (m && m[1]) src = m[1];
-          }
-
-          // Normalize empty or gradient backgrounds to empty string
-          if (src && src.includes('gradient(')) src = '';
-
-          triggerConfettiBurst();
-          openPhoto(title, caption, src || '');
-        });
-
-        applyTilt(card);
-      });
-    }
     if (card.dataset.mapped !== 'true') {
       card.dataset.mapped = 'true';
       card.addEventListener('click', () => {
@@ -143,6 +114,38 @@ function mapPhotoItems() {
       });
       applyTilt(card);
     }
+  });
+}
+
+function mapMomentCards() {
+  document.querySelectorAll('.moment-card').forEach(card => {
+    if (card.dataset.mapped === 'true') return;
+    card.dataset.mapped = 'true';
+
+    const titleEl = card.querySelector('.moment-copy h3');
+    const captionEl = card.querySelector('.moment-copy p');
+
+    card.addEventListener('click', async () => {
+      const title = titleEl ? titleEl.textContent.trim() : '';
+      const caption = captionEl ? captionEl.textContent.trim() : '';
+
+      // Prefer an explicit data-src (set by loadFolderPreviewImages), otherwise read computed background-image
+      let src = card.dataset.src || '';
+      if (!src) {
+        const imageEl = card.querySelector('.moment-image');
+        const bg = imageEl ? getComputedStyle(imageEl).backgroundImage : '';
+        const m = bg && bg.match(/url\((?:(?:"|')?)(.*?)(?:(?:"|')?)\)/);
+        if (m && m[1]) src = m[1];
+      }
+
+      // Normalize empty or gradient backgrounds to empty string
+      if (src && src.includes('gradient(')) src = '';
+
+      triggerConfettiBurst();
+      openPhoto(title, caption, src || '');
+    });
+
+    applyTilt(card);
   });
 }
 
@@ -172,10 +175,68 @@ function initHeroAnimations() {
   });
 }
 
+function updateCarouselDepth() {
+  const cards = document.querySelectorAll('.carousel-track .moment-card');
+  const centerX = window.innerWidth / 2;
+  cards.forEach(card => {
+    const rect = card.getBoundingClientRect();
+    const cardCenter = rect.left + rect.width / 2;
+    const distance = Math.min(Math.abs(cardCenter - centerX), centerX);
+    const progress = 1 - distance / centerX;
+    const scale = 0.88 + progress * 0.18;
+    const zDepth = 10 + progress * 36;
+    const opacity = 0.45 + progress * 0.55;
+    const blur = (1 - progress) * 1.6;
+    card.style.setProperty('--card-scale', scale.toString());
+    card.style.setProperty('--card-z', `${zDepth}px`);
+    card.style.setProperty('--card-opacity', opacity.toString());
+    card.style.setProperty('--card-blur', `${blur}px`);
+  });
+}
+
 function initCarousel() {
   const track = document.querySelector('.carousel-track');
-  if (!window.gsap || !track) return;
-  gsap.to(track, { xPercent: -33, duration: 24, ease: 'none', repeat: -1 });
+  if (!track) return;
+
+  const carouselSpeed = 38;
+  const gap = parseFloat(getComputedStyle(track).gap) || 0;
+  let step = track.querySelector('.moment-card')?.offsetWidth + gap;
+  if (!step) return;
+
+  let x = 0;
+  let lastTime = performance.now();
+  let animationId;
+
+  const updateStep = () => {
+    const firstCard = track.querySelector('.moment-card');
+    if (firstCard) {
+      step = firstCard.offsetWidth + gap;
+    }
+  };
+
+  const animate = (time) => {
+    const delta = (time - lastTime) / 1000;
+    lastTime = time;
+    x -= delta * carouselSpeed;
+
+    if (x <= -step) {
+      x += step;
+      track.appendChild(track.firstElementChild);
+    }
+
+    track.style.transform = `translateX(${x}px)`;
+    updateCarouselDepth();
+    animationId = requestAnimationFrame(animate);
+  };
+
+  const resizeObserver = new ResizeObserver(() => {
+    updateStep();
+  });
+  resizeObserver.observe(track);
+
+  if (animationId) cancelAnimationFrame(animationId);
+  lastTime = performance.now();
+  animationId = requestAnimationFrame(animate);
 }
 
 function initParallax() {
@@ -384,13 +445,28 @@ function init() {
   if (finalVideo && modalVideo) {
     finalVideo.addEventListener('canplay', () => modalVideo.classList.add('has-video'));
     finalVideo.addEventListener('error', () => modalVideo.classList.remove('has-video'));
+    finalVideo.addEventListener('play', () => {
+      const audio = document.querySelector('audio');
+      if (audio) audio.pause();
+    });
+    finalVideo.addEventListener('ended', () => {
+      const audio = document.querySelector('audio');
+      if (audio) audio.play();
+    });
   }
 
   initHeroAnimations();
-  initCarousel();
   setSectionObserver();
   initParallax();
-  loadFolderPreviewImages().then(mapMomentCards).catch(() => mapMomentCards());
+  loadFolderPreviewImages()
+    .then(() => {
+      initCarousel();
+      mapMomentCards();
+    })
+    .catch(() => {
+      initCarousel();
+      mapMomentCards();
+    });
 
   // Ensure Enter/Space keyboard activates the intro button when focused
   if (introOpenBtn) {

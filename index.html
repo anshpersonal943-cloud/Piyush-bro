@@ -1,0 +1,216 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hexa Memory Box</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" defer></script>
+    <style>
+      /* Inline overrides: hero sizing, modal/popup basics, and hidden utility */
+      .hero-copy h1 { font-size: clamp(1.9rem, 4vw, 3.6rem); line-height:1.02; max-width:52ch; margin-bottom:0.35rem; }
+      .hidden{ display:none !important; }
+      .photo-modal, .popup{ position: fixed; inset:0; display:grid; place-items:center; z-index:1200; }
+      .photo-modal .modal-backdrop{ position:absolute; inset:0; background:rgba(2,2,6,0.72); backdrop-filter:blur(8px); }
+      .modal-shell{ position:relative; z-index:10; width:min(920px,calc(100% - 3rem)); max-height:88vh; overflow:auto; border-radius:1.25rem; background:linear-gradient(180deg, rgba(17,17,24,0.96), rgba(12,12,18,0.94)); padding:1rem; display:grid; grid-template-columns:1fr 360px; gap:1rem; }
+      .modal-close{ position:absolute; top:0.6rem; right:0.6rem; width:40px; height:40px; border-radius:999px; display:inline-grid; place-items:center; background:rgba(255,255,255,0.04); border:none; cursor:pointer; }
+      .modal-photo{ width:100%; height:72vh; background-size:cover; background-position:center; border-radius:0.8rem; }
+      .popup .popup-content{ width:min(720px,calc(100% - 3rem)); background:linear-gradient(180deg, rgba(16,12,18,0.98), rgba(10,10,14,0.95)); padding:1.4rem; border-radius:1rem; box-shadow:0 30px 80px rgba(0,0,0,0.5); }
+      .popup .popup-close{ position:absolute; top:0.6rem; right:0.6rem; border:none; background:transparent; color:var(--text); font-size:1.25rem; cursor:pointer; }
+      @media (max-width:880px){ .hero-section{ grid-template-columns:1fr; gap:1.25rem; min-height:70vh;} .hero-hexagon{ order:2; width:min(360px,68vw); margin:0 auto;} .hero-copy{order:1;} }
+      /* Saved memories vault thumbnails */
+      .memory-gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1rem; align-items:start; }
+      .memory-item { background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); padding:0.6rem; border-radius:1rem; overflow:hidden; display:flex; flex-direction:column; }
+      .memory-item img { width:100%; height:140px; object-fit:cover; border-radius:0.8rem; filter:contrast(1.18) saturate(1.05); box-shadow:0 14px 40px rgba(0,0,0,0.35); transition:transform .28s ease, box-shadow .28s ease; }
+      .memory-item h3{ margin-top:0.6rem; font-size:1rem; color:var(--text); }
+      .memory-item p{ margin-top:0.35rem; color:var(--muted); font-size:0.85rem; }
+      .memory-item:hover img{ transform:scale(1.04); box-shadow:0 22px 60px rgba(0,0,0,0.42); }
+    </style>
+</head>
+
+<body>
+  <div class="background-layer"></div>
+  <div class="bokeh-layer"></div>
+  <div class="particle-layer"></div>
+
+  <main class="page-frame">
+    <section class="hero-section">
+      <div class="hero-copy">
+        <span class="eyebrow">Cinematic Memory Vault</span>
+        <h1>When a hexagonal box explodes into a lifetime of memories.</h1>
+        <p>Experience a premium scrapbook journey with floating polaroids, glass details, and a soft cinematic glow.</p>
+        <div class="hero-actions">
+          <a href="#gallery" class="button primary">Explore Memories</a>
+          <a href="#timeline" class="button secondary">Our Story</a>
+        </div>
+      </div>
+
+      <div class="hero-hexagon" id="heroHexagon">
+        <div class="hexagon-shell"></div>
+        <div class="hex-content">
+          <div class="hex-inner"></div>
+          <div class="hex-label">Memory Box</div>
+        </div>
+        <div class="hex-cards">
+          <article class="photo-card card-1" data-src="photo1.jpg" data-title="Sunset Drive" data-caption="A quiet night with golden light.">
+            <img src="photo1.jpg" alt="Memory 1" />
+            <span>September 2024</span>
+          </article>
+          <article class="photo-card card-2" data-src="photo2.jpg" data-title="City Lights" data-caption="Late-night laughs under neon skies.">
+            <img src="photo2.jpg" alt="Memory 2" />
+            <span>November 2024</span>
+          </article>
+          <article class="photo-card card-3" data-src="photo3.jpg" data-title="Vintage Road" data-caption="A journey with friends and quiet music.">
+            <img src="photo3.jpg" alt="Memory 3" />
+            <span>December 2024</span>
+          </article>
+          <article class="photo-card card-4" data-src="photo4.jpg" data-title="Golden Hour" data-caption="Soft light, warm moments.">
+            <img src="photo4.jpg" alt="Memory 4" />
+            <span>March 2025</span>
+          </article>
+          <article class="photo-card card-5" data-src="photo5.jpg" data-title="Quiet Window" data-caption="A scrapbook feeling with layers of time.">
+            <img src="photo5.jpg" alt="Memory 5" />
+            <span>May 2025</span>
+          </article>
+          <article class="photo-card card-6" data-src="photo6.jpg" data-title="Soft Night" data-caption="Starry skies and nostalgic thoughts.">
+            <img src="photo6.jpg" alt="Memory 6" />
+            <span>June 2025</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section panel" id="gallery">
+      <div class="section-header">
+        <span>Memory Gallery</span>
+        <h2>Expandable Polaroids in a floating scrapbook.</h2>
+      </div>
+      <div class="gallery-grid">
+        <button class="photo-frame" data-src="photo1.jpg" data-title="Sunset Drive" data-caption="A quiet night with golden light.">
+          <div class="frame-label">Autumn</div>
+          <img src="photo1.jpg" alt="Memory" />
+        </button>
+        <button class="photo-frame" data-src="photo2.jpg" data-title="City Lights" data-caption="Late-night laughs under neon skies.">
+          <div class="frame-label">Night</div>
+          <img src="photo2.jpg" alt="Memory" />
+        </button>
+        <button class="photo-frame" data-src="photo3.jpg" data-title="Vintage Road" data-caption="A journey with friends and quiet music.">
+          <div class="frame-label">Adventure</div>
+          <img src="photo3.jpg" alt="Memory" />
+        </button>
+        <button class="photo-frame" data-src="photo4.jpg" data-title="Golden Hour" data-caption="Soft light, warm moments.">
+          <div class="frame-label">Glow</div>
+          <img src="photo4.jpg" alt="Memory" />
+        </button>
+        <button class="photo-frame" data-src="photo5.jpg" data-title="Quiet Window" data-caption="A scrapbook feeling with layers of time.">
+          <div class="frame-label">Dream</div>
+          <img src="photo5.jpg" alt="Memory" />
+        </button>
+        <button class="photo-frame" data-src="photo6.jpg" data-title="Soft Night" data-caption="Starry skies and nostalgic thoughts.">
+          <div class="frame-label">Stars</div>
+          <img src="photo6.jpg" alt="Memory" />
+        </button>
+      </div>
+    </section>
+
+    <section class="section story-panel" id="timeline">
+      <div class="section-header">
+        <span>Timeline</span>
+        <h2>Every chapter unfolds like a handcrafted scrapbook.</h2>
+      </div>
+      <div class="timeline-cards">
+        <article class="timeline-card">
+          <span class="timeline-step">1</span>
+          <h3>First Box</h3>
+          <p>The first memory opened. A soft explosion of handwritten notes, faded tickets, and warm light.</p>
+        </article>
+        <article class="timeline-card">
+          <span class="timeline-step">2</span>
+          <h3>Favorite Moments</h3>
+          <p>A carousel of golden snapshots and whispered stories, layered like paper and tape.</p>
+        </article>
+        <article class="timeline-card">
+          <span class="timeline-step">3</span>
+          <h3>Unexpected Joy</h3>
+          <p>Hidden photographs float from the centerpiece, creating a premium, cinematic reveal.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section carousel-panel" id="favorites">
+      <div class="section-header">
+        <span>Favorite Moments</span>
+        <h2>Swipe through the slow-motion memories.</h2>
+      </div>
+      <div class="carousel-window">
+        <div class="carousel-track">
+          <article class="moment-card">
+            <div class="moment-image" style="background-image:url('photo2.jpg')"></div>
+            <div class="moment-copy">
+              <h3>Neon Afterglow</h3>
+              <p>Floating in a city of late-night feelings and lingering warmth.</p>
+            </div>
+          </article>
+          <article class="moment-card">
+            <div class="moment-image" style="background-image:url('photo5.jpg')"></div>
+            <div class="moment-copy">
+              <h3>Paper Dreams</h3>
+              <p>Polaroid frames layered with soft blur and golden accents.</p>
+            </div>
+          </article>
+          <article class="moment-card">
+            <div class="moment-image" style="background-image:url('photo3.jpg')"></div>
+            <div class="moment-copy">
+              <h3>Quiet Roads</h3>
+              <p>A reflective drive with ambient beats and open windows.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section audio-panel" id="music">
+      <div class="audio-card">
+        <div>
+          <span>Music Player</span>
+          <h2>Lo-fi memory soundtrack</h2>
+          <p>Soft beats and cinematic pressure to carry the mood through every reveal.</p>
+        </div>
+        <audio controls loop>
+          <source src="song.mp3" type="audio/mp3" />
+          Your browser does not support audio playback.
+        </audio>
+      </div>
+    </section>
+
+    <section class="section finale-panel">
+      <div class="finale-copy">
+        <span>Final Message</span>
+        <h2>These memories are the ribbon that holds us together.</h2>
+        <p>Thank you for the photos, the hidden notes, the midnight stories, and the soft heartbeats inside every page.</p>
+      </div>
+      <button class="button primary" id="openFinal">Open the last frame</button>
+    </section>
+  </main>
+
+  <div class="photo-modal hidden" id="photoModal">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-shell">
+      <button class="modal-close" id="modalClose">×</button>
+      <div class="modal-photo"></div>
+      <div class="modal-copy">
+        <h3 id="modalTitle">Memory</h3>
+        <p id="modalCaption">Cinematic view of the photo.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+
+</html>

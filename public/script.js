@@ -86,16 +86,27 @@ function triggerConfettiBurst() {
 function applyTilt(card) {
   if (!card) return;
   const originalTransform = card.style.transform || getComputedStyle(card).transform || '';
-  card.addEventListener('pointermove', (event) => {
-    const rect = card.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * 10;
-    const rotateY = ((x - centerX) / centerX) * -10;
-    card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.04)`;
-  });
+  let ticking = false;
+  let lastX = 0, lastY = 0;
+  const handleMove = (event) => {
+    lastX = event.clientX;
+    lastY = event.clientY;
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(() => {
+        const rect = card.getBoundingClientRect();
+        const x = lastX - rect.left;
+        const y = lastY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * 10;
+        const rotateY = ((x - centerX) / centerX) * -10;
+        card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.04)`;
+        ticking = false;
+      });
+    }
+  };
+  card.addEventListener('pointermove', handleMove, { passive: true });
   card.addEventListener('pointerleave', () => {
     card.style.transform = originalTransform;
   });
@@ -691,42 +702,38 @@ async function adjustImageFocus(img) {
   img.style.objectPosition = 'center';
 }
 
-// ✨ Light Animations & Effects
+// ✨ Light Animations & Effects with Event Delegation
 function initLightAnimations() {
-  // Add interactive glow to cards on hover
-  document.querySelectorAll('.photo-card, .memory-item, .moment-card, .timeline-card').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-      if (window.gsap) {
-        gsap.to(this, { filter: 'drop-shadow(0 0 16px rgba(255, 126, 199, 0.5))', duration: 0.4, ease: 'power2.out' });
-      }
-    });
-    card.addEventListener('mouseleave', function() {
-      if (window.gsap) {
-        gsap.to(this, { filter: 'drop-shadow(0 0 0px rgba(255, 126, 199, 0))', duration: 0.4, ease: 'power2.out' });
-      }
-    });
-  });
+  // Delegated glow effect on hover
+  const cardSelector = '.photo-card, .memory-item, .moment-card, .timeline-card';
+  document.addEventListener('mouseenter', (e) => {
+    const card = e.target.closest(cardSelector);
+    if (card && window.gsap) {
+      gsap.to(card, { filter: 'drop-shadow(0 0 16px rgba(255, 126, 199, 0.5))', duration: 0.4, ease: 'power2.out' });
+    }
+  }, true);
+  document.addEventListener('mouseleave', (e) => {
+    const card = e.target.closest(cardSelector);
+    if (card && window.gsap) {
+      gsap.to(card, { filter: 'drop-shadow(0 0 0px rgba(255, 126, 199, 0))', duration: 0.4, ease: 'power2.out' });
+    }
+  }, true);
 
-  // Add click ripple effect to buttons
-  document.querySelectorAll('.button, .intro-skip').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      const rect = this.getBoundingClientRect();
-      const ripple = document.createElement('span');
-      ripple.style.position = 'absolute';
-      ripple.style.borderRadius = '50%';
-      ripple.style.background = 'rgba(255, 255, 255, 0.5)';
-      ripple.style.width = '100px';
-      ripple.style.height = '100px';
-      ripple.style.left = (e.clientX - rect.left - 50) + 'px';
-      ripple.style.top = (e.clientY - rect.top - 50) + 'px';
-      ripple.style.pointerEvents = 'none';
-      this.style.position = 'relative';
-      this.style.overflow = 'hidden';
-      this.appendChild(ripple);
-      if (window.gsap) {
-        gsap.to(ripple, { scale: 3, opacity: 0, duration: 0.8, ease: 'power2.out', onComplete: () => ripple.remove() });
-      }
-    });
+  // Delegated click ripple on buttons
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.button, .intro-skip');
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.style.cssText = 'position:absolute;border-radius:50%;background:rgba(255,255,255,0.5);width:100px;height:100px;pointer-events:none;';
+    ripple.style.left = (e.clientX - rect.left - 50) + 'px';
+    ripple.style.top = (e.clientY - rect.top - 50) + 'px';
+    btn.style.position = 'relative';
+    btn.style.overflow = 'hidden';
+    btn.appendChild(ripple);
+    if (window.gsap) {
+      gsap.to(ripple, { scale: 3, opacity: 0, duration: 0.8, ease: 'power2.out', onComplete: () => ripple.remove() });
+    }
   });
 }
 

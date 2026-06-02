@@ -154,26 +154,10 @@ function initHeroAnimations() {
   if (!window.gsap) return;
   const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
-  tl.from('.intro-shell', { opacity: 0, scale: 0.98, duration: 1.2 });
+  tl.from('.intro-shell', { opacity: 0, scale: 0.98, duration: 0.8 });
 
-  gsap.to('.hero-hexagon', { rotation: 360, duration: 60, ease: 'none', repeat: -1 });
-  gsap.to('.background-layer', { y: '7%', duration: 32, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-  gsap.to('.bokeh-layer', { x: '5%', duration: 26, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-  gsap.to('.floating-hearts', { y: '-4%', duration: 28, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-  gsap.fromTo('.photo-card', { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 1, ease: 'power3.out', stagger: 0.08, delay: 1.2 });
-
-  const cards = document.querySelectorAll('.photo-card');
-  cards.forEach((card, index) => {
-    gsap.to(card, {
-      y: `+=${Math.sin(index * 0.8) * 10}px`,
-      x: `+=${Math.cos(index * 1.1) * 10}px`,
-      rotation: `+=${index % 2 === 0 ? 3 : -3}`,
-      duration: 8 + index,
-      ease: 'sine.inOut',
-      repeat: -1,
-      yoyo: true
-    });
-  });
+  gsap.to('.hero-hexagon', { rotation: 360, duration: 120, ease: 'none', repeat: -1 });
+  gsap.fromTo('.photo-card', { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'power3.out', stagger: 0.04, delay: 0.6 });
 }
 
 function updateCarouselDepth() {
@@ -241,23 +225,7 @@ function initCarousel() {
 }
 
 function initParallax() {
-  const bg = document.querySelector('.background-layer');
-  const bokeh = document.querySelector('.bokeh-layer');
-  if (!bg && !bokeh) return;
-  let latestScroll = 0;
-  let ticking = false;
-  window.addEventListener('scroll', () => {
-    latestScroll = window.scrollY;
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(() => {
-        const s = latestScroll;
-        if (bg) bg.style.transform = `translateY(${s * 0.02}px)`;
-        if (bokeh) bokeh.style.transform = `translateY(${s * -0.03}px)`;
-        ticking = false;
-      });
-    }
-  }, { passive: true });
+  // Parallax disabled for better scroll performance
 }
 
 function initFinalButton() {

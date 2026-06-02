@@ -56,6 +56,7 @@ function openFinalVideo() {
       source.setAttribute('src', FINAL_VIDEO_SRC);
     }
     finalVideo.load();
+    finalVideo.play().catch(() => {});
   }
   if (modalTitle) modalTitle.textContent = '😂😂😂😂';
   if (modalCaption) modalCaption.textContent = 'Bhai Video toh mujhe pata hai khatarnak hai 😂 par bhai no grudges plsss and kaam karvadiyo usme no drama 😂😂 🙏🙏🙏';
@@ -306,6 +307,7 @@ function initAudioAutoplay() {
   audio.loop = true;
   audio.autoplay = true;
   audio.playsInline = true;
+  audio.preload = 'none';
 
   const attemptPlay = () => {
     const playPromise = audio.play();
@@ -402,7 +404,7 @@ function renderSunflowerIntro(memories) {
     petal.style.setProperty('--delay', `${index * 0.08}s`);
     petal.style.setProperty('--float-delay', `${index * -0.18}s`);
     petal.style.setProperty('--depth', depth);
-    petal.innerHTML = `<img src="${escapeHtml(memory.image)}" alt="${escapeHtml(memory.title || `Memory petal ${index + 1}`)}" />`;
+    petal.innerHTML = `<img loading="lazy" src="${escapeHtml(memory.image)}" alt="${escapeHtml(memory.title || `Memory petal ${index + 1}`)}" />`;
     petalContainer.appendChild(petal);
   });
 }

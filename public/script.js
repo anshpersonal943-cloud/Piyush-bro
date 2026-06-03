@@ -165,7 +165,11 @@ function initHeroAnimations() {
   if (!window.gsap) return;
   const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
-  tl.from('.intro-shell', { opacity: 0, scale: 0.98, duration: 0.8 });
+  tl.from('.intro-shell', { opacity: 0, scale: 0.98, duration: 0.8 }, 0)
+    .from('.hero-copy .eyebrow', { y: 20, opacity: 0, duration: 0.55 }, 0.15)
+    .from('.hero-copy h1', { y: 20, opacity: 0, duration: 0.8 }, 0.25)
+    .from('.hero-copy p', { y: 20, opacity: 0, duration: 0.75 }, 0.35)
+    .from('.hero-hexagon', { opacity: 0, y: 20, duration: 0.8 }, 0.45);
 
   gsap.to('.hero-hexagon', { rotation: 360, duration: 120, ease: 'none', repeat: -1 });
   gsap.fromTo('.photo-card', { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'power3.out', stagger: 0.04, delay: 0.6 });

@@ -717,6 +717,7 @@ body:not(.not-loaded) .intro-shell:not(.fade-out),
   letter-spacing: -0.04em;
   margin-bottom: 1rem;
   max-width: 13ch;
+  animation: headingGlow 8s ease-in-out infinite alternate;
 }
 
 .hero-copy p {
@@ -817,6 +818,7 @@ body:not(.not-loaded) .intro-shell:not(.fade-out),
   inset: -10%;
   background: radial-gradient(circle, rgba(255, 126, 199, 0.18), transparent 45%);
   filter: blur(3rem);
+  animation: hexGlow 8.5s ease-in-out infinite alternate;
 }
 
 .hex-cards {
@@ -1542,6 +1544,26 @@ button.primary {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes headingGlow {
+  from {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  to {
+    text-shadow: 0 4px 28px rgba(255, 126, 199, 0.25);
+  }
+}
+
+@keyframes hexGlow {
+  from {
+    opacity: 0.56;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0.72;
+    transform: scale(1.12);
   }
 }
 

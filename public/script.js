@@ -702,38 +702,25 @@ async function adjustImageFocus(img) {
   img.style.objectPosition = 'center';
 }
 
-// ✨ Light Animations & Effects with Event Delegation
+// ✨ Light Animations & Effects
 function initLightAnimations() {
-  // Delegated glow effect on hover
-  const cardSelector = '.photo-card, .memory-item, .moment-card, .timeline-card';
-  document.addEventListener('mouseenter', (e) => {
-    const card = e.target.closest(cardSelector);
-    if (card && window.gsap) {
-      gsap.to(card, { filter: 'drop-shadow(0 0 16px rgba(255, 126, 199, 0.5))', duration: 0.4, ease: 'power2.out' });
-    }
-  }, true);
-  document.addEventListener('mouseleave', (e) => {
-    const card = e.target.closest(cardSelector);
-    if (card && window.gsap) {
-      gsap.to(card, { filter: 'drop-shadow(0 0 0px rgba(255, 126, 199, 0))', duration: 0.4, ease: 'power2.out' });
-    }
-  }, true);
-
-  // Delegated click ripple on buttons
+  // Button ripple on click
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('.button, .intro-skip');
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
     const ripple = document.createElement('span');
-    ripple.style.cssText = 'position:absolute;border-radius:50%;background:rgba(255,255,255,0.5);width:100px;height:100px;pointer-events:none;';
+    ripple.style.cssText = 'position:absolute;border-radius:50%;background:rgba(255,255,255,0.35);width:100px;height:100px;pointer-events:none;transform:scale(0);opacity:0.7;transition:transform 0.8s ease, opacity 0.8s ease;';
     ripple.style.left = (e.clientX - rect.left - 50) + 'px';
     ripple.style.top = (e.clientY - rect.top - 50) + 'px';
     btn.style.position = 'relative';
     btn.style.overflow = 'hidden';
     btn.appendChild(ripple);
-    if (window.gsap) {
-      gsap.to(ripple, { scale: 3, opacity: 0, duration: 0.8, ease: 'power2.out', onComplete: () => ripple.remove() });
-    }
+    requestAnimationFrame(() => {
+      ripple.style.transform = 'scale(2.5)';
+      ripple.style.opacity = '0';
+    });
+    setTimeout(() => ripple.remove(), 800);
   });
 }
 

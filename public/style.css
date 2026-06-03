@@ -49,7 +49,6 @@
 
 /* auto-hide after visible time */
 .birthday-banner { transition: opacity 400ms ease, transform 400ms ease; }
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   color-scheme: dark;
@@ -889,6 +888,8 @@ body:not(.not-loaded) .intro-shell:not(.fade-out),
   padding: 4rem 2.5rem 5rem;
   position: relative;
   z-index: 2;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 720px;
 }
 
 .section-header {
@@ -1586,5 +1587,56 @@ button.primary {
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+.low-end-device *,
+.low-end-device *::before,
+.low-end-device *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}
+
+.low-end-device .intro-aurora,
+.low-end-device .intro-particles,
+.low-end-device .bokeh-layer,
+.low-end-device .floating-hearts,
+.low-end-device .particle-layer,
+.low-end-device .hex-glow,
+.low-end-device .sunflower-glow {
+  display: none !important;
+}
+
+.low-end-device .sunflower-petal,
+.low-end-device .sunflower-petal img,
+.low-end-device .moment-card,
+.low-end-device .photo-card,
+.low-end-device .panel,
+.low-end-device .modal-backdrop,
+.low-end-device .popup::before {
+  filter: none !important;
+  backdrop-filter: none !important;
+  will-change: auto !important;
+}
+
+.low-end-device .carousel-track {
+  transform: none !important;
+}
+
+.low-end-device .moment-card {
+  --card-scale: 1;
+  --card-z: 0px;
+  --card-opacity: 1;
+  --card-blur: 0px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }

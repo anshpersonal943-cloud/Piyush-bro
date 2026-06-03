@@ -20,6 +20,22 @@ const INTRO_FALLBACK_IMAGES = [
   '/uploads/photo%20piyush/6086972023381890040.jpg'
 ];
 
+const deviceProfile = (() => {
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const lowMemory = typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4;
+  const lowCpu = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+  const saveData = Boolean(connection && connection.saveData);
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const narrowTouch = window.matchMedia && window.matchMedia('(max-width: 760px) and (pointer: coarse)').matches;
+  return {
+    lowEnd: saveData || reducedMotion || (lowMemory && lowCpu) || (lowCpu && narrowTouch),
+    reducedMotion,
+    saveData
+  };
+})();
+
+document.documentElement.classList.toggle('low-end-device', deviceProfile.lowEnd);
+
 let modal, modalBackdrop, modalClose, modalPhoto, modalVideo, finalVideo, modalTitle, modalCaption, openFinalBtn, popupEl, surpriseBtn, introOpenBtn;
 let sunflowerIntroStarted = false;
 let introClosing = false;
@@ -78,6 +94,7 @@ function closePhoto() {
 }
 
 function triggerConfettiBurst() {
+  if (deviceProfile.lowEnd) return;
   try {
     confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 }, colors: ['#ffb4df', '#ffd37d', '#ff8fc3', '#ffffff'] });
   } catch (e) { }
@@ -85,6 +102,7 @@ function triggerConfettiBurst() {
 
 function applyTilt(card) {
   if (!card) return;
+  if (deviceProfile.lowEnd || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
   const originalTransform = card.style.transform || getComputedStyle(card).transform || '';
   let ticking = false;
   let lastX = 0, lastY = 0;
@@ -114,7 +132,7 @@ function applyTilt(card) {
 
 function mapPhotoItems() {
   document.querySelectorAll('.photo-card').forEach(card => {
-    card.style.willChange = 'transform';
+    if (!deviceProfile.lowEnd) card.style.willChange = 'transform';
     if (card.dataset.mapped !== 'true') {
       card.dataset.mapped = 'true';
       card.addEventListener('click', () => {
@@ -162,6 +180,10 @@ function mapMomentCards() {
 }
 
 function initHeroAnimations() {
+  if (deviceProfile.lowEnd) {
+    revealMainContent();
+    return;
+  }
   if (!window.gsap) return;
   const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
@@ -176,6 +198,7 @@ function initHeroAnimations() {
 }
 
 function updateCarouselDepth() {
+  if (deviceProfile.lowEnd) return;
   const cards = document.querySelectorAll('.carousel-track .moment-card');
   const centerX = window.innerWidth / 2;
   cards.forEach(card => {
@@ -206,6 +229,8 @@ function initCarousel() {
   let x = 0;
   let lastTime = performance.now();
   let animationId;
+  let isVisible = true;
+  let depthFrame = 0;
 
   const updateStep = () => {
     const firstCard = track.querySelector('.moment-card');
@@ -215,6 +240,11 @@ function initCarousel() {
   };
 
   const animate = (time) => {
+    if (!isVisible || document.hidden) {
+      animationId = requestAnimationFrame(animate);
+      lastTime = time;
+      return;
+    }
     const delta = (time - lastTime) / 1000;
     lastTime = time;
     x -= delta * carouselSpeed;
@@ -225,7 +255,7 @@ function initCarousel() {
     }
 
     track.style.transform = `translateX(${x}px)`;
-    updateCarouselDepth();
+    if (!deviceProfile.lowEnd && depthFrame++ % 2 === 0) updateCarouselDepth();
     animationId = requestAnimationFrame(animate);
   };
 
@@ -234,9 +264,21 @@ function initCarousel() {
   });
   resizeObserver.observe(track);
 
-  if (animationId) cancelAnimationFrame(animationId);
-  lastTime = performance.now();
-  animationId = requestAnimationFrame(animate);
+  const visibilityObserver = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entries) => {
+        isVisible = entries.some(entry => entry.isIntersecting);
+      }, { rootMargin: '160px' })
+    : null;
+
+  if (visibilityObserver) visibilityObserver.observe(track);
+
+  if (!deviceProfile.lowEnd) {
+    if (animationId) cancelAnimationFrame(animationId);
+    lastTime = performance.now();
+    animationId = requestAnimationFrame(animate);
+  } else {
+    track.style.transform = 'translateX(0)';
+  }
 }
 
 function initParallax() {
@@ -632,7 +674,20 @@ async function loadMemoriesFromServer() {
       if (img) {
         img.src = src;
         img.alt = card.dataset.title;
-        img.onload = () => adjustImageFocus(img);
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.onload = () => {
+          if (deviceProfile.lowEnd) {
+            img.style.objectPosition = 'center';
+            return;
+          }
+          const runFocus = () => adjustImageFocus(img);
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(runFocus, { timeout: 1200 });
+          } else {
+            setTimeout(runFocus, 80);
+          }
+        };
       }
     });
 
@@ -651,6 +706,7 @@ async function renderMemoryGallery(memories) {
     return;
   }
   container.innerHTML = '';
+  const fragment = document.createDocumentFragment();
   memories.forEach(memory => {
     const resolvedSrc = memory.image ? memory.image : 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'1200\' height=\'800\'%3E%3Crect width=\'1200\' height=\'800\' fill=\'%23211f2a\'/%3E%3C/svg%3E';
     const card = document.createElement('div');
@@ -659,7 +715,7 @@ async function renderMemoryGallery(memories) {
     card.dataset.title = memory.title || 'Memory';
     card.dataset.caption = memory.message || 'A cherished moment captured';
     card.innerHTML = `
-      <img src="${escapeHtml(resolvedSrc)}" alt="${escapeHtml(memory.title)}" />
+      <img loading="lazy" decoding="async" src="${escapeHtml(resolvedSrc)}" alt="${escapeHtml(memory.title)}" />
       <h3>${escapeHtml(memory.title)}</h3>
       <p>${escapeHtml(memory.message)}</p>
     `;
@@ -667,8 +723,9 @@ async function renderMemoryGallery(memories) {
       triggerConfettiBurst();
       openPhoto(card.dataset.title, card.dataset.caption, resolvedSrc);
     });
-    container.appendChild(card);
+    fragment.appendChild(card);
   });
+  container.appendChild(fragment);
 }
 
 async function resolveFolderImagesForMemory(memory) {
@@ -687,6 +744,10 @@ async function resolveFolderImagesForMemory(memory) {
 
 async function adjustImageFocus(img) {
   if (!img || !img.complete || !img.naturalWidth) return;
+  if (deviceProfile.lowEnd) {
+    img.style.objectPosition = 'center';
+    return;
+  }
   try {
     if ('FaceDetector' in window) {
       const detector = new FaceDetector({ fastMode: true, maxDetectedFaces: 5 });
@@ -708,6 +769,7 @@ async function adjustImageFocus(img) {
 
 // ✨ Light Animations & Effects
 function initLightAnimations() {
+  if (deviceProfile.lowEnd) return;
   // Button ripple on click
   document.addEventListener('click', function(e) {
     const btn = e.target.closest('.button, .intro-skip');

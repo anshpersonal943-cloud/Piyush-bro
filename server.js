@@ -19,11 +19,26 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const staticOptions = {
+  etag: true,
+  maxAge: '7d',
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+      return;
+    }
+
+    if (/\.(?:css|js|json|jpg|jpeg|png|gif|webp|mp3|mp4)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+    }
+  }
+};
+
 // Static Files - Serve public folder
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), staticOptions));
 
 // Serve uploads folder
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), staticOptions));
 
 /* =========================
    CREATE FILES IF MISSING

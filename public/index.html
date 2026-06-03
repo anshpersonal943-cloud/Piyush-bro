@@ -196,28 +196,6 @@
           </audio>
         </div>
       </section>
-      <script>
-        (function() {
-          const audio = document.querySelector('audio');
-          if (!audio) return;
-          audio.volume = 0.55;
-          audio.loop = true;
-          audio.autoplay = true;
-          audio.playsInline = true;
-          audio.preload = 'auto';
-
-          const attemptPlay = () => {
-            const playPromise = audio.play();
-            if (playPromise && playPromise.catch) {
-              playPromise.catch(() => {});
-            }
-          };
-
-          attemptPlay();
-          document.addEventListener('click', attemptPlay, { once: true, capture: true });
-          document.addEventListener('keydown', attemptPlay, { once: true, capture: true });
-        })();
-      </script>
 
       <section class="section finale-panel">
         <div class="finale-copy">

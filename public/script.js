@@ -316,7 +316,6 @@ function openPopup() {
   triggerConfettiBurst();
   if (window.gsap && !deviceProfile.isMobile) gsap.fromTo('#popup .popup-content', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' });
 }
-}
 
 function openIntro(event) {
   // Allow real user interactions (clicks and keydowns). Block only untrusted programmatic clicks.

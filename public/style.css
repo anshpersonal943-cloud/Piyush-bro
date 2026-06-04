@@ -1658,6 +1658,229 @@ button.primary {
   }
 }
 
+/* Cinematic animation polish */
+body::before {
+  animation: ambientGlow 16s ease-in-out infinite alternate;
+}
+
+.background-layer {
+  background-size: 120% 120%;
+  animation: backgroundBreath 18s ease-in-out infinite alternate;
+}
+
+.bokeh-layer {
+  animation: bokehDrift 26s linear infinite;
+}
+
+.hero-copy .eyebrow,
+.section-header span,
+.finale-copy span,
+.audio-card span {
+  animation: softTextGlow 3.8s ease-in-out infinite alternate;
+}
+
+.hero-copy p,
+.finale-copy p,
+.timeline-card p,
+.moment-copy p,
+.memory-item p {
+  animation: textLift 0.8s ease both;
+}
+
+.hero-hexagon .hex-content {
+  animation: heroInnerGlow 7s ease-in-out infinite;
+}
+
+.hero-hexagon .hex-content::after,
+.finale-panel::after,
+.audio-card::after,
+.timeline-card::after,
+.memory-item::after,
+.moment-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(115deg, transparent 18%, rgba(255, 255, 255, 0.16) 42%, transparent 66%);
+  transform: translateX(-120%);
+}
+
+.hero-hexagon .hex-content::after {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  animation: glassSweep 7.5s ease-in-out infinite;
+}
+
+.finale-panel,
+.audio-card,
+.timeline-card,
+.memory-item,
+.moment-card {
+  position: relative;
+}
+
+.section.visible,
+.memory-item.visible,
+.timeline-card.visible,
+.moment-card.visible,
+.audio-card.visible,
+.finale-panel.visible,
+.upload-form.visible {
+  transition:
+    opacity 0.75s ease,
+    transform 0.75s cubic-bezier(0.19, 1, 0.22, 1),
+    box-shadow 0.45s ease,
+    border-color 0.45s ease;
+}
+
+.memory-item.visible,
+.timeline-card.visible,
+.audio-card.visible,
+.finale-panel.visible,
+.upload-form.visible {
+  animation: sectionRise 0.8s cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+.memory-item:nth-child(2n).visible,
+.timeline-card:nth-child(2n).visible {
+  animation-delay: 0.08s;
+}
+
+.memory-item:nth-child(3n).visible,
+.timeline-card:nth-child(3n).visible {
+  animation-delay: 0.16s;
+}
+
+.memory-item:hover,
+.timeline-card:hover,
+.audio-card:hover,
+.finale-panel:hover,
+.upload-form:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.34), 0 0 42px rgba(255, 126, 199, 0.11);
+}
+
+.memory-item:hover::after,
+.timeline-card:hover::after,
+.audio-card:hover::after,
+.finale-panel:hover::after,
+.moment-card:hover::after {
+  animation: glassSweep 0.9s ease forwards;
+  opacity: 1;
+}
+
+.memory-item img,
+.moment-image {
+  transition: transform 1.2s ease, filter 0.8s ease;
+}
+
+.memory-item:hover img,
+.moment-card:hover .moment-image {
+  transform: scale(1.06);
+  filter: saturate(1.18) contrast(1.08) brightness(1.04);
+}
+
+.button {
+  position: relative;
+  overflow: hidden;
+}
+
+.button::after,
+.intro-skip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.28) 44%, transparent 68%);
+  transform: translateX(-120%);
+}
+
+.button:hover::after,
+.intro-skip:hover::after {
+  animation: glassSweep 0.85s ease forwards;
+}
+
+.button.primary,
+#openFinal {
+  animation: buttonAura 3.6s ease-in-out infinite alternate;
+}
+
+.timeline-step {
+  animation: badgePulse 3.4s ease-in-out infinite;
+}
+
+.modal-video.has-video {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 46px rgba(255, 126, 199, 0.2);
+  animation: videoGlow 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes ambientGlow {
+  0% { opacity: 0.4; transform: scale(1); }
+  100% { opacity: 0.72; transform: scale(1.08); }
+}
+
+@keyframes backgroundBreath {
+  0% { background-position: 0% 0%; opacity: 0.88; }
+  100% { background-position: 100% 18%; opacity: 1; }
+}
+
+@keyframes bokehDrift {
+  0% { background-position: 0 0; }
+  100% { background-position: 14rem -18rem; }
+}
+
+@keyframes softTextGlow {
+  from { text-shadow: 0 0 0 rgba(255, 126, 199, 0); }
+  to { text-shadow: 0 0 18px rgba(255, 126, 199, 0.44); }
+}
+
+@keyframes textLift {
+  from { opacity: 0.72; transform: translateY(0.4rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroInnerGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 0 rgba(255, 126, 199, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 22px rgba(255, 126, 199, 0.24));
+  }
+}
+
+@keyframes glassSweep {
+  0% { opacity: 0; transform: translateX(-120%); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(120%); }
+}
+
+@keyframes sectionRise {
+  from {
+    opacity: 0;
+    transform: translateY(34px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes buttonAura {
+  from { box-shadow: 0 18px 50px rgba(255, 126, 199, 0.2); }
+  to { box-shadow: 0 22px 64px rgba(255, 126, 199, 0.36), 0 0 24px rgba(129, 115, 255, 0.22); }
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(255, 126, 199, 0); transform: scale(1); }
+  50% { box-shadow: 0 0 28px rgba(255, 126, 199, 0.28); transform: scale(1.05); }
+}
+
+@keyframes videoGlow {
+  from { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 32px rgba(255, 126, 199, 0.14); }
+  to { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16), 0 0 58px rgba(111, 213, 255, 0.22); }
+}
+
 .low-end-device *,
 .low-end-device *::before,
 .low-end-device *::after {

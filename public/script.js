@@ -55,6 +55,10 @@ if (deviceProfile.isMobile || deviceProfile.isAndroid) {
 let modal, modalBackdrop, modalClose, modalPhoto, modalVideo, finalVideo, modalTitle, modalCaption, openFinalBtn, popupEl, surpriseBtn, introOpenBtn;
 let sunflowerIntroStarted = false;
 let introClosing = false;
+let finalVideoLocked = false;
+let finalVideoFinished = false;
+let finalVideoBackLockActive = false;
+let finalVideoLastTime = 0;
 
 function openPhoto(title, caption, src) {
   if (!modal) return;
@@ -87,6 +91,7 @@ function openFinalVideo() {
     if (source && source.getAttribute('src') !== FINAL_VIDEO_SRC) {
       source.setAttribute('src', FINAL_VIDEO_SRC);
     }
+    lockFinalVideo();
     finalVideo.load();
     finalVideo.play().catch(() => {});
   }
@@ -100,13 +105,72 @@ function openFinalVideo() {
 function closePhoto() {
   if (!modal) return;
   // Don't allow closing while video is playing
-  if (finalVideo && !finalVideo.paused) return;
+  if (finalVideoLocked) return;
   if (finalVideo) finalVideo.pause();
   if (window.gsap && !deviceProfile.isMobile) {
     gsap.to('.modal-shell', { y: 30, opacity: 0, duration: 0.28, ease: 'power3.in', onComplete() { modal.classList.add('hidden'); } });
   } else {
     modal.classList.add('hidden');
   }
+}
+
+function lockFinalVideo() {
+  if (!finalVideo) return;
+  finalVideoLocked = true;
+  finalVideoFinished = false;
+  finalVideoLastTime = 0;
+  finalVideo.controls = false;
+  finalVideo.muted = false;
+  finalVideo.volume = 1;
+  finalVideo.currentTime = 0;
+  activateFinalVideoBackLock();
+}
+
+function unlockFinalVideo() {
+  finalVideoLocked = false;
+  finalVideoFinished = true;
+  releaseFinalVideoBackLock();
+}
+
+function activateFinalVideoBackLock() {
+  if (finalVideoBackLockActive) return;
+  finalVideoBackLockActive = true;
+  history.pushState({ finalVideoLocked: true }, '', window.location.href);
+}
+
+function releaseFinalVideoBackLock() {
+  finalVideoBackLockActive = false;
+}
+
+function keepFinalVideoPlaying() {
+  if (!finalVideo || !finalVideoLocked || finalVideoFinished) return;
+  if (finalVideo.ended) {
+    unlockFinalVideo();
+    return;
+  }
+  finalVideo.muted = false;
+  finalVideo.volume = 1;
+  finalVideo.play().catch(() => {});
+}
+
+function handleFinalVideoSeeking() {
+  if (!finalVideo || !finalVideoLocked || finalVideoFinished) return;
+  if (finalVideo.currentTime < finalVideoLastTime - 0.4) {
+    finalVideo.currentTime = finalVideoLastTime;
+  }
+}
+
+function handleFinalVideoTimeUpdate() {
+  if (!finalVideo || !finalVideoLocked || finalVideoFinished) return;
+  finalVideoLastTime = Math.max(finalVideoLastTime, finalVideo.currentTime);
+  finalVideo.muted = false;
+  finalVideo.volume = 1;
+}
+
+function handleBrowserBackDuringFinalVideo() {
+  if (!finalVideoBackLockActive || finalVideoFinished) return;
+  history.pushState({ finalVideoLocked: true }, '', window.location.href);
+  keepFinalVideoPlaying();
 }
 
 function triggerConfettiBurst() {
@@ -492,11 +556,23 @@ function init() {
     finalVideo.addEventListener('play', () => {
       const audio = document.querySelector('audio');
       if (audio) audio.pause();
+      finalVideo.muted = false;
+      finalVideo.volume = 1;
     });
+    finalVideo.addEventListener('pause', keepFinalVideoPlaying);
+    finalVideo.addEventListener('volumechange', () => {
+      if (!finalVideoLocked || finalVideoFinished) return;
+      finalVideo.muted = false;
+      finalVideo.volume = 1;
+    });
+    finalVideo.addEventListener('seeking', handleFinalVideoSeeking);
+    finalVideo.addEventListener('timeupdate', handleFinalVideoTimeUpdate);
     finalVideo.addEventListener('ended', () => {
+      unlockFinalVideo();
       const audio = document.querySelector('audio');
       if (audio) audio.play();
     });
+    window.addEventListener('popstate', handleBrowserBackDuringFinalVideo);
   }
 
   initHeroAnimations();

@@ -1482,6 +1482,10 @@ footer {
   50% { transform: scale(1.02) rotate(-1deg); }
 }
 
+@keyframes heroHexagonRotate {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes slide {
   0% { transform: translateX(0); }
   100% { transform: translateX(-33%); }
@@ -1971,5 +1975,18 @@ body::before {
   
   .birthday-text {
     text-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  }
+}
+
+@media (max-width: 820px) and (prefers-reduced-motion: no-preference) {
+  .hero-hexagon {
+    animation: heroHexagonRotate 90s linear infinite !important;
+    animation-iteration-count: infinite !important;
+    transform-origin: center;
+  }
+
+  .low-end-device .hero-hexagon {
+    animation-duration: 120s !important;
+    animation-iteration-count: infinite !important;
   }
 }

@@ -1482,8 +1482,9 @@ footer {
   50% { transform: scale(1.02) rotate(-1deg); }
 }
 
-@keyframes heroHexagonRotate {
-  to { transform: rotate(360deg); }
+@keyframes heroCardsRotate {
+  from { transform: translate3d(0, 0, 0) rotate(0deg); }
+  to { transform: translate3d(0, 0, 0) rotate(360deg); }
 }
 
 @keyframes slide {
@@ -1976,17 +1977,83 @@ body::before {
   .birthday-text {
     text-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
   }
+
+  .background-layer,
+  .bokeh-layer,
+  .hero-copy .eyebrow,
+  .section-header span,
+  .finale-copy span,
+  .audio-card span,
+  .hero-copy p,
+  .finale-copy p,
+  .timeline-card p,
+  .moment-copy p,
+  .memory-item p,
+  .button.primary,
+  #openFinal,
+  .timeline-step,
+  .modal-video.has-video {
+    animation: none !important;
+  }
+
+  .memory-item:hover,
+  .timeline-card:hover,
+  .audio-card:hover,
+  .finale-panel:hover,
+  .upload-form:hover {
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 820px) and (prefers-reduced-motion: no-preference) {
-  .hero-hexagon {
-    animation: heroHexagonRotate 90s linear infinite !important;
+  .hex-cards {
+    animation: heroCardsRotate 96s linear infinite !important;
     animation-iteration-count: infinite !important;
+    contain: layout paint;
+    transform: translate3d(0, 0, 0);
     transform-origin: center;
+    transform-style: flat;
+    will-change: transform !important;
   }
 
-  .low-end-device .hero-hexagon {
+  .low-end-device .hex-cards {
     animation-duration: 120s !important;
     animation-iteration-count: infinite !important;
+    will-change: transform !important;
   }
+
+  .hero-hexagon .hex-content,
+  .hero-hexagon .hex-content::after,
+  .hero-hexagon .hex-glow {
+    animation: none !important;
+  }
+
+  .hero-hexagon .hex-content {
+    backdrop-filter: none;
+  }
+
+  .photo-card {
+    backdrop-filter: none;
+    backface-visibility: hidden;
+    box-shadow: 0 1rem 2.4rem rgba(0, 0, 0, 0.3);
+    transition: none;
+    transform-style: flat;
+  }
+
+  .photo-card img {
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .photo-card::after,
+  .photo-card:hover::after {
+    display: none !important;
+  }
+
+  .card-1 { transform: translate3d(-50%, 0, 0) rotate(-8deg); }
+  .card-2 { transform: translate3d(0, 0, 0) rotate(14deg); }
+  .card-3 { transform: translate3d(0, 0, 0) rotate(-14deg); }
+  .card-4 { transform: translate3d(0, 0, 0) rotate(20deg); }
+  .card-5 { transform: translate3d(0, 0, 0) rotate(-20deg); }
+  .card-6 { transform: translate3d(0, 0, 0) rotate(10deg); }
 }

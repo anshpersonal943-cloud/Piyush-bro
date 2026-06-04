@@ -46,9 +46,9 @@ document.documentElement.classList.toggle('low-end-device', deviceProfile.lowEnd
 // Optimize images for Android/Mobile
 if (deviceProfile.isMobile || deviceProfile.isAndroid) {
   document.documentElement.style.setProperty('--image-quality', 'auto');
-  // Disable will-change on mobile to save memory
+  // Keep the animated hero card layer promoted, but avoid promoting every decorative effect.
   const style = document.createElement('style');
-  style.textContent = '@media (max-width: 820px) { * { will-change: auto !important; } }';
+  style.textContent = '@media (max-width: 820px) { body::before, .background-layer, .bokeh-layer, .floating-hearts, .particle-layer, .sunflower-petal img, .moment-card { will-change: auto !important; } }';
   document.head.appendChild(style);
 }
 

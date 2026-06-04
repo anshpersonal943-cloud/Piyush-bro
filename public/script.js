@@ -27,14 +27,30 @@ const deviceProfile = (() => {
   const saveData = Boolean(connection && connection.saveData);
   const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const narrowTouch = window.matchMedia && window.matchMedia('(max-width: 760px) and (pointer: coarse)').matches;
+  const isMobile = window.innerWidth <= 820 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const isSlowConnection = connection && (connection.effectiveType === '4g' ? false : connection.effectiveType === '3g' || connection.effectiveType === '2g');
+  
   return {
-    lowEnd: saveData || reducedMotion || (lowMemory && lowCpu) || (lowCpu && narrowTouch),
+    lowEnd: saveData || reducedMotion || (lowMemory && lowCpu) || (lowCpu && narrowTouch) || (isAndroid && (lowMemory || lowCpu || isSlowConnection)),
     reducedMotion,
-    saveData
+    saveData,
+    isMobile,
+    isAndroid,
+    isSlowConnection
   };
 })();
 
 document.documentElement.classList.toggle('low-end-device', deviceProfile.lowEnd);
+
+// Optimize images for Android/Mobile
+if (deviceProfile.isMobile || deviceProfile.isAndroid) {
+  document.documentElement.style.setProperty('--image-quality', 'auto');
+  // Disable will-change on mobile to save memory
+  const style = document.createElement('style');
+  style.textContent = '@media (max-width: 820px) { * { will-change: auto !important; } }';
+  document.head.appendChild(style);
+}
 
 let modal, modalBackdrop, modalClose, modalPhoto, modalVideo, finalVideo, modalTitle, modalCaption, openFinalBtn, popupEl, surpriseBtn, introOpenBtn;
 let sunflowerIntroStarted = false;
@@ -52,7 +68,7 @@ function openPhoto(title, caption, src) {
   }
   if (modalTitle) modalTitle.textContent = title || 'Memory';
   if (modalCaption) modalCaption.textContent = caption || 'A cinematic view of the photo.';
-  if (window.gsap) {
+  if (window.gsap && !deviceProfile.isMobile) {
     gsap.fromTo('.modal-shell', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' });
   }
 }
@@ -76,7 +92,7 @@ function openFinalVideo() {
   }
   if (modalTitle) modalTitle.textContent = '😂😂😂😂';
   if (modalCaption) modalCaption.textContent = 'Bhai Video toh mujhe pata hai khatarnak hai 😂 par bhai no grudges plsss and kaam karvadiyo usme no drama 😂😂 🙏🙏🙏';
-  if (window.gsap) {
+  if (window.gsap && !deviceProfile.isMobile) {
     gsap.fromTo('.modal-shell', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' });
   }
 }
@@ -86,7 +102,7 @@ function closePhoto() {
   // Don't allow closing while video is playing
   if (finalVideo && !finalVideo.paused) return;
   if (finalVideo) finalVideo.pause();
-  if (window.gsap) {
+  if (window.gsap && !deviceProfile.isMobile) {
     gsap.to('.modal-shell', { y: 30, opacity: 0, duration: 0.28, ease: 'power3.in', onComplete() { modal.classList.add('hidden'); } });
   } else {
     modal.classList.add('hidden');
@@ -102,7 +118,7 @@ function triggerConfettiBurst() {
 
 function applyTilt(card) {
   if (!card) return;
-  if (deviceProfile.lowEnd || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  if (deviceProfile.lowEnd || deviceProfile.isMobile || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
   const originalTransform = card.style.transform || getComputedStyle(card).transform || '';
   let ticking = false;
   let lastX = 0, lastY = 0;
@@ -180,7 +196,7 @@ function mapMomentCards() {
 }
 
 function initHeroAnimations() {
-  if (deviceProfile.lowEnd) {
+  if (deviceProfile.lowEnd || deviceProfile.isMobile) {
     revealMainContent();
     return;
   }
@@ -198,7 +214,7 @@ function initHeroAnimations() {
 }
 
 function updateCarouselDepth() {
-  if (deviceProfile.lowEnd) return;
+  if (deviceProfile.lowEnd || deviceProfile.isMobile) return;
   const cards = document.querySelectorAll('.carousel-track .moment-card');
   const centerX = window.innerWidth / 2;
   cards.forEach(card => {
@@ -221,7 +237,7 @@ function initCarousel() {
   const track = document.querySelector('.carousel-track');
   if (!track) return;
 
-  const carouselSpeed = 38;
+  const carouselSpeed = deviceProfile.isMobile ? 24 : 38;
   const gap = parseFloat(getComputedStyle(track).gap) || 0;
   let step = track.querySelector('.moment-card')?.offsetWidth + gap;
   if (!step) return;
@@ -231,6 +247,7 @@ function initCarousel() {
   let animationId;
   let isVisible = true;
   let depthFrame = 0;
+  let depthUpdateInterval = deviceProfile.isMobile ? 4 : 2;
 
   const updateStep = () => {
     const firstCard = track.querySelector('.moment-card');
@@ -255,7 +272,7 @@ function initCarousel() {
     }
 
     track.style.transform = `translateX(${x}px)`;
-    if (!deviceProfile.lowEnd && depthFrame++ % 2 === 0) updateCarouselDepth();
+    if (!deviceProfile.lowEnd && !deviceProfile.isMobile && depthFrame++ % depthUpdateInterval === 0) updateCarouselDepth();
     animationId = requestAnimationFrame(animate);
   };
 
@@ -297,7 +314,8 @@ function openPopup() {
   if (!popupEl) return;
   popupEl.classList.remove('hidden');
   triggerConfettiBurst();
-  if (window.gsap) gsap.fromTo('#popup .popup-content', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' });
+  if (window.gsap && !deviceProfile.isMobile) gsap.fromTo('#popup .popup-content', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' });
+}
 }
 
 function openIntro(event) {
@@ -373,7 +391,7 @@ function revealMainContent() {
   const mainFrame = document.querySelector('.page-frame');
   if (mainFrame) {
     mainFrame.style.opacity = '1';
-    if (window.gsap) {
+    if (window.gsap && !deviceProfile.isMobile) {
       gsap.fromTo('.page-frame', { y: 70, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, ease: 'power3.out' });
     }
   }

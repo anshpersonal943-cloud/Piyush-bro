@@ -91,6 +91,8 @@ function openFinalVideo() {
     if (source && source.getAttribute('src') !== FINAL_VIDEO_SRC) {
       source.setAttribute('src', FINAL_VIDEO_SRC);
     }
+    finalVideo.muted = false;
+    finalVideo.volume = 1;
     lockFinalVideo();
     finalVideo.load();
     finalVideo.play().catch(() => {});
@@ -273,7 +275,7 @@ function initHeroAnimations() {
     .from('.hero-copy p', { y: 20, opacity: 0, duration: 0.75 }, 0.35)
     .from('.hero-hexagon', { opacity: 0, y: 20, duration: 0.8 }, 0.45);
 
-  gsap.to('.hero-hexagon', { rotation: 360, duration: 120, ease: 'none', repeat: -1 });
+  gsap.to('.hero-hexagon', { rotation: 360, duration: 60, ease: 'none', repeat: -1 });
   gsap.fromTo('.photo-card', { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'power3.out', stagger: 0.04, delay: 0.6 });
 }
 
@@ -301,7 +303,7 @@ function initCarousel() {
   const track = document.querySelector('.carousel-track');
   if (!track) return;
 
-  const carouselSpeed = deviceProfile.isMobile ? 24 : 38;
+  const carouselSpeed = deviceProfile.isMobile ? 48 : 72;
   const gap = parseFloat(getComputedStyle(track).gap) || 0;
   let step = track.querySelector('.moment-card')?.offsetWidth + gap;
   if (!step) return;
@@ -551,7 +553,11 @@ function init() {
   introOpenBtn = document.getElementById('introOpen');
 
   if (finalVideo && modalVideo) {
-    finalVideo.addEventListener('canplay', () => modalVideo.classList.add('has-video'));
+    finalVideo.addEventListener('canplay', () => {
+      modalVideo.classList.add('has-video');
+      finalVideo.muted = false;
+      finalVideo.volume = 1;
+    });
     finalVideo.addEventListener('error', () => modalVideo.classList.remove('has-video'));
     finalVideo.addEventListener('play', () => {
       const audio = document.querySelector('audio');
